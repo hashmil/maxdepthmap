@@ -1,7 +1,5 @@
 import * as THREE from "three";
-// import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
-// import GyroNorm from "gyronorm";
 
 import MyTexture from "./assets/max_rgbd.png";
 
@@ -31,7 +29,7 @@ const scene = new THREE.Scene();
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
 
-const pointLight = new THREE.PointLight(0x000000, 0.5);
+const pointLight = new THREE.PointLight(0xffffff, 0.5);
 pointLight.position.z = 2500;
 scene.add(pointLight);
 
@@ -61,7 +59,7 @@ function onWindowResize() {
 }
 window.addEventListener("resize", onWindowResize);
 
-// Add this function to convert mouse coordinates to 3D space
+// convert mouse coordinates to 3D space
 function getMousePosition(event, domElement) {
   const rect = domElement.getBoundingClientRect();
   const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -69,7 +67,7 @@ function getMousePosition(event, domElement) {
   return { x, y };
 }
 
-// Add this event listener
+// event listener
 renderer.domElement.addEventListener("mousemove", (event) => {
   const mousePosition = getMousePosition(event, renderer.domElement);
   const vector = new THREE.Vector3(mousePosition.x, mousePosition.y, -0.5);
@@ -246,37 +244,3 @@ window.addEventListener("message", function (e) {
 });
 
 // mobile control
-// Check if DeviceMotionEvent is supported
-if (window.DeviceMotionEvent) {
-  // Add event listener for device motion changes
-  window.addEventListener("devicemotion", handleDeviceMotion);
-} else {
-  console.log("Device motion events are not supported in this browser.");
-}
-
-let previousAcceleration = { x: 0, y: 0, z: 0 };
-
-function handleDeviceMotion(event) {
-  const acceleration = event.accelerationIncludingGravity;
-  const rotationRate = event.rotationRate;
-
-  const damping = 0.1; // Adjust this value for desired smoothness
-
-  // Calculate the camera's new position based on the device acceleration
-  const newPos = new THREE.Vector3(
-    camera.position.x + (acceleration.x - previousAcceleration.x) * damping,
-    camera.position.y + (acceleration.y - previousAcceleration.y) * damping,
-    camera.position.z + (acceleration.z - previousAcceleration.z) * damping
-  );
-
-  // Update the camera's position and rotation
-  camera.position.copy(newPos);
-  camera.rotation.set(
-    camera.rotation.x + rotationRate.alpha * damping,
-    camera.rotation.y + rotationRate.beta * damping,
-    camera.rotation.z + rotationRate.gamma * damping
-  );
-
-  // Update the previous acceleration values for smooth transitions
-  previousAcceleration = acceleration;
-}
