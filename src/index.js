@@ -242,5 +242,3 @@ window.addEventListener("message", function (e) {
     image.src = e.data.imagedata;
   }
 });
-
-// mobile control
