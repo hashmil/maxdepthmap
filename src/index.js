@@ -244,12 +244,29 @@ window.addEventListener("message", function (e) {
   }
 });
 
-// Check if DeviceOrientationEvent is supported
-if (window.DeviceOrientationEvent) {
-  // Add an event listener for device orientation events
-  window.addEventListener("deviceorientation", handleDeviceOrientation, true);
-} else {
-  console.warn("DeviceOrientationEvent is not supported on this device.");
+async function requestDeviceOrientationPermission() {
+  if (typeof DeviceOrientationEvent.requestPermission === "function") {
+    try {
+      const permission = await DeviceOrientationEvent.requestPermission();
+      if (permission === "granted") {
+        window.addEventListener(
+          "deviceorientation",
+          handleDeviceOrientation,
+          true
+        );
+      } else {
+        console.warn("DeviceOrientationEvent permission not granted.");
+      }
+    } catch (error) {
+      console.error(
+        "Error requesting DeviceOrientationEvent permission:",
+        error
+      );
+    }
+  } else {
+    // For non-iOS 13+ devices
+    window.addEventListener("deviceorientation", handleDeviceOrientation, true);
+  }
 }
 
 function handleDeviceOrientation(event) {
@@ -265,3 +282,6 @@ function handleDeviceOrientation(event) {
   // Update camera rotation
   camera.rotation.set(rotationX, rotationY, rotationZ);
 }
+
+// Request permission to access device orientation data
+requestDeviceOrientationPermission();
