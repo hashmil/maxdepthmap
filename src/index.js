@@ -1,6 +1,7 @@
 import * as THREE from "three";
 // import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
+// import GyroNorm from "gyronorm";
 
 import MyTexture from "./assets/max_rgbd.png";
 
@@ -244,44 +245,38 @@ window.addEventListener("message", function (e) {
   }
 });
 
-async function requestDeviceOrientationPermission() {
-  if (typeof DeviceOrientationEvent.requestPermission === "function") {
-    try {
-      const permission = await DeviceOrientationEvent.requestPermission();
-      if (permission === "granted") {
-        window.addEventListener(
-          "deviceorientation",
-          handleDeviceOrientation,
-          true
-        );
-      } else {
-        console.warn("DeviceOrientationEvent permission not granted.");
-      }
-    } catch (error) {
-      console.error(
-        "Error requesting DeviceOrientationEvent permission:",
-        error
-      );
-    }
-  } else {
-    // For non-iOS 13+ devices
-    window.addEventListener("deviceorientation", handleDeviceOrientation, true);
-  }
+// mobile control
+// Check if DeviceMotionEvent is supported
+if (window.DeviceMotionEvent) {
+  // Add event listener for device motion changes
+  window.addEventListener("devicemotion", handleDeviceMotion);
+} else {
+  console.log("Device motion events are not supported in this browser.");
 }
 
-function handleDeviceOrientation(event) {
-  const alpha = event.alpha; // Rotation around the Z-axis (0 to 360)
-  const beta = event.beta; // Front-to-back motion (-180 to 180)
-  const gamma = event.gamma; // Left-to-right motion (-90 to 90)
+let previousAcceleration = { x: 0, y: 0, z: 0 };
 
-  // Calculate camera rotation based on device orientation
-  const rotationX = THREE.MathUtils.degToRad(beta);
-  const rotationY = THREE.MathUtils.degToRad(alpha);
-  const rotationZ = THREE.MathUtils.degToRad(-gamma);
+function handleDeviceMotion(event) {
+  const acceleration = event.accelerationIncludingGravity;
+  const rotationRate = event.rotationRate;
 
-  // Update camera rotation
-  camera.rotation.set(rotationX, rotationY, rotationZ);
+  const damping = 0.1; // Adjust this value for desired smoothness
+
+  // Calculate the camera's new position based on the device acceleration
+  const newPos = new THREE.Vector3(
+    camera.position.x + (acceleration.x - previousAcceleration.x) * damping,
+    camera.position.y + (acceleration.y - previousAcceleration.y) * damping,
+    camera.position.z + (acceleration.z - previousAcceleration.z) * damping
+  );
+
+  // Update the camera's position and rotation
+  camera.position.copy(newPos);
+  camera.rotation.set(
+    camera.rotation.x + rotationRate.alpha * damping,
+    camera.rotation.y + rotationRate.beta * damping,
+    camera.rotation.z + rotationRate.gamma * damping
+  );
+
+  // Update the previous acceleration values for smooth transitions
+  previousAcceleration = acceleration;
 }
-
-// Request permission to access device orientation data
-requestDeviceOrientationPermission();
