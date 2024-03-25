@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+// import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 import MyTexture from "./assets/max_rgbd.png";
@@ -83,9 +83,9 @@ renderer.domElement.addEventListener("mousemove", (event) => {
 });
 
 // orbit controls
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableZoom = true;
-controls.enableDamping = true;
+// const controls = new OrbitControls(camera, renderer.domElement);
+// controls.enableZoom = true;
+// controls.enableDamping = true;
 
 const image = new Image();
 image.onload = function () {
@@ -243,3 +243,25 @@ window.addEventListener("message", function (e) {
     image.src = e.data.imagedata;
   }
 });
+
+// Check if DeviceOrientationEvent is supported
+if (window.DeviceOrientationEvent) {
+  // Add an event listener for device orientation events
+  window.addEventListener("deviceorientation", handleDeviceOrientation, true);
+} else {
+  console.warn("DeviceOrientationEvent is not supported on this device.");
+}
+
+function handleDeviceOrientation(event) {
+  const alpha = event.alpha; // Rotation around the Z-axis (0 to 360)
+  const beta = event.beta; // Front-to-back motion (-180 to 180)
+  const gamma = event.gamma; // Left-to-right motion (-90 to 90)
+
+  // Calculate camera rotation based on device orientation
+  const rotationX = THREE.MathUtils.degToRad(beta);
+  const rotationY = THREE.MathUtils.degToRad(alpha);
+  const rotationZ = THREE.MathUtils.degToRad(-gamma);
+
+  // Update camera rotation
+  camera.rotation.set(rotationX, rotationY, rotationZ);
+}
